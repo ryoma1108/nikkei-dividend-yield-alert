@@ -20,32 +20,53 @@ rows = list(csv.reader(StringIO(response.text)))
 # ヘッダーを除く
 data = rows[1:]
 
-# 最新行
+# 最新・前日データ
 latest = data[0]
+previous = data[1]
 
-# データ取得
-data_date = latest[1]
-nikkei = latest[2]
-per = latest[3]
-pbr = latest[4]
-eps = latest[5]
-dividend = latest[6]
+# 配当利回り
+latest_yield = float(latest[6])
+previous_yield = float(previous[6])
 
-message = f"""📊 テスト
+# =========================
+# ゾーン判定
+# =========================
+def get_zone(yield_value):
+    if yield_value >= 2.5:
+        return "🔴 歴史的チャンス"
+    elif yield_value >= 2.2:
+        return "🟢 積極買い"
+    elif yield_value >= 2.0:
+        return "🟡 買い始め"
+    elif yield_value >= 1.8:
+        return "👀 監視開始"
+    else:
+        return "⚪ 対象外"
 
-データ日付：{data_date}
+current_zone = get_zone(latest_yield)
+previous_zone = get_zone(previous_yield)
 
-日経平均：{nikkei}
+changed = "あり" if current_zone != previous_zone else "なし"
 
-PER：{per}
-PBR：{pbr}
-EPS：{eps}
+message = f"""📊 ゾーン判定テスト
 
-配当利回り：{dividend}%"""
+現在
+{latest_yield:.2f}%
+
+前日
+{previous_yield:.2f}%
+
+現在ゾーン
+{current_zone}
+
+前日ゾーン
+{previous_zone}
+
+ゾーン変化
+{changed}
+"""
 
 # =========================
 # LINE送信
 # =========================
-response = requests.post(GAS_WEBHOOK_URL, data=message)
-
-print(response.text)
+requests.post(GAS_WEBHOOK_URL, data=message)
