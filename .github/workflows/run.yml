@@ -3,7 +3,7 @@ name: Daily Alert
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 9 * * *'
+    - cron: "0 9 * * *"
 
 jobs:
   run:
@@ -23,4 +23,5 @@ jobs:
           GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
           SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
           SETTINGS_CSV_URL: ${{ secrets.SETTINGS_CSV_URL }}
+          STATE_CSV_URL: ${{ secrets.STATE_CSV_URL }}
         run: python main.py
