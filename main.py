@@ -7,6 +7,7 @@ from io import StringIO
 # 設定
 # =========================
 SHEET_CSV_URL = os.environ["SHEET_CSV_URL"]
+SETTINGS_CSV_URL = os.environ["SETTINGS_CSV_URL"]
 GAS_WEBHOOK_URL = os.environ["GAS_WEBHOOK_URL"]
 
 # =========================
@@ -19,7 +20,26 @@ rows = list(csv.reader(StringIO(response.text)))
 
 # ヘッダーを除く
 data = rows[1:]
+# =========================
+# 通知設定取得
+# =========================
+settings_response = requests.get(SETTINGS_CSV_URL)
+settings_response.raise_for_status()
 
+settings_rows = list(csv.reader(StringIO(settings_response.text)))
+
+settings = {}
+
+for row in settings_rows[1:]:
+    if len(row) >= 4:
+        settings[row[0]] = {
+            "enabled": row[1].strip().upper() == "ON",
+            "condition": row[2].strip(),
+            "value": float(row[3])
+        }
+
+high_dividend = settings.get("高配当通知")
+print(high_dividend)
 # 最新・前日データ
 latest = data[0]
 previous = data[1]
