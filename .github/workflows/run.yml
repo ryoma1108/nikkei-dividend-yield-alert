@@ -19,4 +19,5 @@ jobs:
       - name: Run Python
         env:
           GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
+          SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
         run: python main.py
