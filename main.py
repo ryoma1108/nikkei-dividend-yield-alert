@@ -1,10 +1,17 @@
-import requests
 import os
+import csv
+import requests
+from io import StringIO
 
-GAS_URL = os.environ["GAS_WEBHOOK_URL"]
+SHEET_CSV_URL = os.environ["SHEET_CSV_URL"]
 
-message = "🎉 GitHubからLINE通知テスト成功！"
+response = requests.get(SHEET_CSV_URL)
+response.raise_for_status()
 
-response = requests.post(GAS_URL, data=message)
+csv_text = response.text
+rows = list(csv.reader(StringIO(csv_text)))
 
-print(response.text)
+print("読み込み成功")
+print("行数:", len(rows))
+print("先頭行:", rows[0])
+print("最新データ:", rows[1])
