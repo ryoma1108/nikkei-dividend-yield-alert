@@ -1,8 +1,7 @@
 from market import load_market_data
 from settings import load_notification_settings
-from state import get_state, update_state
 from notification import send_line
-from state import update_state
+from state import get_state, update_state
 from zone import get_zone
 
 
@@ -33,14 +32,13 @@ def should_notify(setting, latest_yield):
 def main():
     data = load_market_data()
     settings = load_notification_settings()
-    state = load_state()
 
     latest = data[0]
 
     latest_yield = float(latest[6])
     current_zone = get_zone(latest_yield)
 
-    last_zone = state.get("last_zone")
+    last_zone = get_state("last_zone")
 
     high_dividend_setting = settings.get("高配当通知")
 
