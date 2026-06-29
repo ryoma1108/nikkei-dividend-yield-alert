@@ -1,6 +1,6 @@
 from market import load_market_data
 from settings import load_notification_settings
-from state_reader import load_state
+from state import get_state, update_state
 from notification import send_line
 from state import update_state
 from zone import get_zone
