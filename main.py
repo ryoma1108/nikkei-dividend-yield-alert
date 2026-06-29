@@ -1,8 +1,9 @@
 from market import load_market_data
 from settings import load_notification_settings
+from state_reader import load_state
 from notification import send_line
 from state import update_state
-from zone import get_zone, zone_changed
+from zone import get_zone
 
 
 def should_notify(setting, latest_yield):
@@ -32,15 +33,14 @@ def should_notify(setting, latest_yield):
 def main():
     data = load_market_data()
     settings = load_notification_settings()
+    state = load_state()
 
     latest = data[0]
-    previous = data[1]
 
     latest_yield = float(latest[6])
-    previous_yield = float(previous[6])
-
     current_zone = get_zone(latest_yield)
-    previous_zone = get_zone(previous_yield)
+
+    last_zone = state.get("last_zone")
 
     high_dividend_setting = settings.get("高配当通知")
 
@@ -48,18 +48,19 @@ def main():
         print("通知条件に一致しないため送信しません")
         return
 
-    if not zone_changed(current_zone, previous_zone):
-        print("ゾーン変化なしのため送信しません")
+    if last_zone == current_zone:
+        print("前回通知ゾーンと同じため送信しません")
         return
 
     message = f"""📊 ゾーン変化通知
 
 配当利回り
-{previous_yield:.2f}% → {latest_yield:.2f}%
+{latest_yield:.2f}%
 
-ゾーン
-{previous_zone}
-↓
+前回ゾーン
+{last_zone}
+
+現在ゾーン
 {current_zone}
 """
 
