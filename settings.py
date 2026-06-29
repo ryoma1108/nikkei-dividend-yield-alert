@@ -15,4 +15,6 @@ def load_notification_settings():
     )
     response.raise_for_status()
 
+    print("GAS response:", response.text)
+
     return response.json()
