@@ -8,7 +8,12 @@ from notification import (
     create_sudden_change_message,
     create_status_message,
 )
-from state import get_all_state, update_notify_state
+from state import (
+    get_all_state,
+    update_notify_state,
+    increment_notification_id,
+)
+from history import add_notification_history
 from zone import get_zone, zone_changed
 
 
@@ -119,6 +124,18 @@ def main():
     send_line(message)
 
     notify_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    notification_id = increment_notification_id()
+
+    add_notification_history(
+        notification_id=notification_id,
+        notify_datetime=notify_date,
+        data_date=data_date,
+        notification_type=notification_type,
+        yield_value=latest_yield,
+        message=message,
+        result="成功",
+        notify_reason=notify_reason,
+    )
 
     update_notify_state(
         zone_level=current_level,
