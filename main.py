@@ -18,6 +18,23 @@ from history import add_notification_history
 from zone import get_zone, zone_changed
 
 
+def get_setting_value(settings, name, default):
+    setting = settings.get(name)
+
+    if setting is None:
+        return default
+
+    value = setting.get("value")
+
+    if value is None:
+        return default
+
+    try:
+        return float(value)
+    except:
+        return default
+
+
 def is_enabled(settings, name):
     setting = settings.get(name)
 
@@ -49,6 +66,9 @@ def main():
     settings = load_notification_settings()
     state = get_all_state()
 
+    sudden_change_threshold = get_setting_value(settings, "急変通知", 0.10)
+    status_notify_days = int(get_setting_value(settings, "現在地通知", 30))
+
     latest = data[0]
     previous = data[1]
 
@@ -71,7 +91,7 @@ def main():
     notify_reason = None
 
     # ① ゾーン変化通知
-    if is_enabled(settings, "高配当通知") and zone_changed(current_level, last_level):
+    if is_enabled(settings, "ゾーン通知") and zone_changed(current_level, last_level):
         message = create_zone_message(
             current_yield=latest_yield,
             previous_zone=last_zone_name,
@@ -88,9 +108,9 @@ def main():
 
     # ② 急変通知
     elif (
-        is_enabled(settings, "高配当通知")
+        is_enabled(settings, "急変通知")
         and current_level >= 1
-        and abs(diff_yield) >= SUDDEN_CHANGE_THRESHOLD
+        and abs(diff_yield) >= sudden_change_threshold
     ):
         message = create_sudden_change_message(
             previous_yield=previous_yield,
@@ -102,10 +122,10 @@ def main():
         notify_reason = "sudden_change"
 
     # ③ 30営業日現在地通知
-    else:
+    elif is_enabled(settings, "現在地通知"):
         business_days = count_business_days_since_last_notify(data, last_data_date)
 
-        if business_days >= STATUS_NOTIFY_DAYS:
+        if business_days >= status_notify_days:
             message = create_status_message(
                 current_yield=latest_yield,
                 current_zone=current_zone_name,
