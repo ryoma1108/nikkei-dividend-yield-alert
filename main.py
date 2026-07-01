@@ -7,7 +7,7 @@ from notification import (
     create_zone_message,
     create_sudden_change_message,
     create_status_message,
-　　create_history_summary,
+    create_history_summary,
 )
 from state import (
     get_all_state,
@@ -127,13 +127,22 @@ def main():
     notify_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     notification_id = increment_notification_id()
 
+    history_summary = create_history_summary(
+        notification_type=notification_type,
+        previous_zone=last_zone_name,
+        current_zone=current_zone_name,
+        previous_yield=previous_yield,
+        current_yield=latest_yield,
+        diff_yield=diff_yield,
+    )
+
     add_notification_history(
         notification_id=notification_id,
         notify_datetime=notify_date,
         data_date=data_date,
         notification_type=notification_type,
         yield_value=latest_yield,
-        message=message,
+        message=history_summary,
         result="成功",
         notify_reason=notify_reason,
     )
