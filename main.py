@@ -18,10 +18,6 @@ from history import add_notification_history
 from zone import get_zone, zone_changed
 
 
-SUDDEN_CHANGE_THRESHOLD = 0.10
-STATUS_NOTIFY_DAYS = 30
-
-
 def is_enabled(settings, name):
     setting = settings.get(name)
 
