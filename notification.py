@@ -72,3 +72,24 @@ def create_status_message(current_yield, current_zone):
 
 現在ゾーン
 {current_zone}"""
+
+def create_history_summary(
+    notification_type,
+    previous_zone,
+    current_zone,
+    previous_yield,
+    current_yield,
+    diff_yield,
+):
+    sign = "+" if diff_yield >= 0 else ""
+
+    if notification_type in ["ゾーン上昇通知", "ゾーン下落通知"]:
+        return f"{previous_zone} → {current_zone}"
+
+    if notification_type == "急変通知":
+        return f"{previous_yield:.2f}% → {current_yield:.2f}%（{sign}{diff_yield:.2f}%）"
+
+    if notification_type == "現在地通知":
+        return f"30営業日経過：{current_zone}"
+
+    return ""
