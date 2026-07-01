@@ -7,6 +7,7 @@ from notification import (
     create_zone_message,
     create_sudden_change_message,
     create_status_message,
+　　create_history_summary,
 )
 from state import (
     get_all_state,
