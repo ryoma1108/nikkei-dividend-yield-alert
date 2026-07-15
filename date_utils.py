@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 
 def normalize_date(value):
@@ -6,8 +7,19 @@ def normalize_date(value):
     if not text:
         return ""
 
-    text = text.replace("/", "-")
-    text = text.split(" ")[0]
+    match = re.search(r"(\d{4})[-/](\d{1,2})[-/](\d{1,2})", text)
+    if match:
+        year, month, day = match.groups()
+        return f"{year}-{int(month):02d}-{int(day):02d}"
+
+    js_date_parts = text.split()
+    if len(js_date_parts) >= 4:
+        js_date_text = " ".join(js_date_parts[:4])
+        try:
+            return datetime.strptime(js_date_text, "%a %b %d %Y").strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+
     text = text.split("T")[0]
 
     try:

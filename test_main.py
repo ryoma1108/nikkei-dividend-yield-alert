@@ -12,6 +12,10 @@ class MainTest(unittest.TestCase):
         self.assertEqual(normalize_date("2026/07/15"), "2026-07-15")
         self.assertEqual(normalize_date("2026-07-15 09:00:00"), "2026-07-15")
         self.assertEqual(normalize_date("2026-07-15T09:00:00"), "2026-07-15")
+        self.assertEqual(
+            normalize_date("Sun Jul 12 2026 00:00:00 GMT+0900 (Japan Standard Time)"),
+            "2026-07-12",
+        )
 
     def test_sort_market_data_newest_first(self):
         data = [row("2026-07-13"), row("2026-07-15"), row("2026-07-14")]
