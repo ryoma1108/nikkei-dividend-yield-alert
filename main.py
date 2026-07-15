@@ -1,5 +1,10 @@
 from datetime import datetime
 
+from date_utils import (
+    count_business_days_since_last_notify,
+    normalize_date,
+    sort_market_data,
+)
 from market import load_market_data
 from settings import load_notification_settings
 from notification import (
@@ -44,25 +49,8 @@ def is_enabled(settings, name):
     return setting.get("enabled", False)
 
 
-def count_business_days_since_last_notify(data, last_data_date):
-    if not last_data_date:
-        return 0
-
-    count = 0
-
-    for row in data:
-        data_date = str(row[1])
-
-        if data_date == last_data_date:
-            break
-
-        count += 1
-
-    return count
-
-
 def main():
-    data = load_market_data()
+    data = sort_market_data(load_market_data())
     settings = load_notification_settings()
     state = get_all_state()
 
@@ -72,7 +60,7 @@ def main():
     latest = data[0]
     previous = data[1]
 
-    data_date = str(latest[1])
+    data_date = normalize_date(latest[1])
     latest_yield = float(latest[6])
     previous_yield = float(previous[6])
 
@@ -82,7 +70,11 @@ def main():
 
     last_level = state["last_zone_level"]
     last_zone_name = state["last_zone_name"]
-    last_data_date = state["last_data_date"]
+    last_data_date = normalize_date(state["last_data_date"])
+
+    print(f"current_data_date: {data_date}")
+    print(f"last_data_date: {last_data_date}")
+    print(f"status_notify_days: {status_notify_days}")
 
     diff_yield = latest_yield - previous_yield
 
@@ -123,9 +115,15 @@ def main():
 
     # ③ 30営業日現在地通知
     elif is_enabled(settings, "現在地通知"):
-        business_days = count_business_days_since_last_notify(data, last_data_date)
+        business_days, found_last_data_date = count_business_days_since_last_notify(data, last_data_date)
 
-        if business_days >= status_notify_days:
+        print(f"last_data_date_found: {found_last_data_date}")
+        print(f"calculated_business_days: {business_days}")
+
+        if data_date == last_data_date:
+            print("notification decision: skip status notification because data_date already notified")
+
+        elif found_last_data_date and business_days >= status_notify_days:
             message = create_status_message(
                 current_yield=latest_yield,
                 current_zone=current_zone_name,
@@ -133,6 +131,9 @@ def main():
 
             notification_type = "現在地通知"
             notify_reason = "monthly_status"
+
+        else:
+            print("notification decision: skip status notification")
 
     if message is None:
         print("通知条件に一致しないため送信しません")
