@@ -29,4 +29,7 @@ jobs:
         env:
           GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
           GITHUB_TOKEN: ${{ secrets.HEALTH_GITHUB_TOKEN }}
+          AUTO_REPAIR: "true"
+          REPAIR_POLL_ATTEMPTS: "8"
+          REPAIR_WAIT_SECONDS: "15"
         run: python daily_health_report.py
