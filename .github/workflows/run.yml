@@ -26,4 +26,14 @@ jobs:
           SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
           SETTINGS_CSV_URL: ${{ secrets.SETTINGS_CSV_URL }}
           STATE_CSV_URL: ${{ secrets.STATE_CSV_URL }}
-        run: python main.py
+        run: |
+          for attempt in 1 2 3; do
+            echo "Attempt ${attempt}/3"
+            if python main.py; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 3 ]; then
+              sleep 60
+            fi
+          done
+          exit 1
