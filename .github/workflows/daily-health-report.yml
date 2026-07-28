@@ -1,0 +1,32 @@
+name: Daily System Health Report
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 毎日 09:15 JST（UTC 00:15）
+    - cron: "15 0 * * *"
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  health-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run unit tests
+        run: python -m unittest tests.test_daily_health_report -v
+
+      - name: Check systems and notify LINE
+        env:
+          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python daily_health_report.py
