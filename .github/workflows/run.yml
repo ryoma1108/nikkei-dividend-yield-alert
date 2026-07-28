@@ -3,7 +3,9 @@ name: Daily Alert
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 9 * * *"
+    # 元データ（nikkei-data-auto）の更新後に判定する。
+    # 03:00 JST（前日の18:00 UTC）、平日のみ。
+    - cron: "0 18 * * 1-5"
 
 jobs:
   run:
