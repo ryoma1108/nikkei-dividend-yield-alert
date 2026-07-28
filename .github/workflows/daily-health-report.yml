@@ -28,5 +28,5 @@ jobs:
       - name: Check systems and notify LINE
         env:
           GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.HEALTH_GITHUB_TOKEN }}
         run: python daily_health_report.py
