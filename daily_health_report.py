@@ -185,7 +185,7 @@ def check_with_auto_repair(check, now=None):
         if REPAIR_WAIT_SECONDS:
             time.sleep(REPAIR_WAIT_SECONDS)
         try:
-            last_result = evaluate_run(check, latest_run(check), now=datetime.now(timezone.utc))
+            last_result = evaluate_run(check, latest_run(check), now=now)
         except Exception:
             continue
         if last_result.status == "healthy":
