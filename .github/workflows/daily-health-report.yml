@@ -14,7 +14,6 @@ jobs:
   health-report:
     runs-on: ubuntu-latest
     timeout-minutes: 10
-
     steps:
       - uses: actions/checkout@v4
 
@@ -24,6 +23,13 @@ jobs:
 
       - name: Run unit tests
         run: python -m unittest tests.test_daily_health_report -v
+
+      - name: Notify LINE if health check tests fail
+        if: failure()
+        env:
+          GAS_WEBHOOK_URL: ${{ secrets.GAS_WEBHOOK_URL }}
+        run: |
+          python -c "import daily_health_report as h; h.send_line('【7システム毎日健康診断】\n診断プログラムのテストが失敗しました。GitHub Actionsを確認してください。')"
 
       - name: Check systems and notify LINE
         env:
