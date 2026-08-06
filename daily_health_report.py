@@ -1,9 +1,10 @@
 import json
 import os
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
+
+import requests
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
@@ -259,31 +260,29 @@ def build_report(now=None):
 
 def send_line(message):
     webhook_url = os.environ["GAS_WEBHOOK_URL"]
-    body = json.dumps(
-        {"action": "send_line", "message": message},
-        ensure_ascii=False,
-    ).encode("utf-8")
+    payload = {"action": "send_line", "message": message}
 
     last_error = None
     for attempt in range(3):
-        request = urllib.request.Request(
-            webhook_url,
-            data=body,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
         try:
-            with urllib.request.urlopen(request, timeout=30) as response:
-                response_body = response.read().decode("utf-8", errors="replace")
-                if not 200 <= response.status < 300:
-                    raise RuntimeError(f"HTTP {response.status}: {response_body}")
-                return response_body
-        except (urllib.error.URLError, TimeoutError, RuntimeError) as error:
+            response = requests.post(
+                webhook_url,
+                data=json.dumps(payload, ensure_ascii=False),
+                headers={"Content-Type": "application/json"},
+                timeout=30,
+            )
+            response.raise_for_status()
+            response_body = response.text
+            if "Script function not found" in response_body:
+                raise RuntimeError(
+                    f"GAS error response: {response_body[:200]}"
+                )
+            return response_body
+        except (requests.RequestException, RuntimeError) as error:
             last_error = error
             if attempt < 2:
                 time.sleep(2**attempt)
     raise RuntimeError(f"LINE通知に失敗しました: {last_error}")
-
 
 def main():
     report, all_ok = build_report()
