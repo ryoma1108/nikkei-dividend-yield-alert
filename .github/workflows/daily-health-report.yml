@@ -21,6 +21,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install health report dependencies
+        run: python -m pip install requests
+
       - name: Run unit tests
         run: python -m unittest tests.test_daily_health_report -v
 
