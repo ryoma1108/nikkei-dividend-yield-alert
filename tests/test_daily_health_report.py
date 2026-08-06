@@ -2,7 +2,7 @@ import os
 import sys
 import unittest
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
@@ -105,6 +105,43 @@ class DailyHealthReportTest(unittest.TestCase):
         )
         for label in expected:
             self.assertIn(label, report)
+
+
+    @patch("daily_health_report.time.sleep")
+    @patch("daily_health_report.requests.post")
+    def test_send_line_returns_success_response(self, post, sleep):
+        response = Mock()
+        response.text = '{"ok":true}'
+        post.return_value = response
+
+        with patch.dict(
+            os.environ,
+            {"GAS_WEBHOOK_URL": "https://example.com/exec"},
+        ):
+            result = daily_health_report.send_line("health check")
+
+        self.assertEqual('{"ok":true}', result)
+        response.raise_for_status.assert_called_once()
+        post.assert_called_once()
+
+    @patch("daily_health_report.time.sleep")
+    @patch("daily_health_report.requests.post")
+    def test_send_line_rejects_apps_script_error_page(self, post, sleep):
+        response = Mock()
+        response.text = (
+            "<title>Error</title>"
+            "Script function not found: doGet"
+        )
+        post.return_value = response
+
+        with patch.dict(
+            os.environ,
+            {"GAS_WEBHOOK_URL": "https://example.com/exec"},
+        ):
+            with self.assertRaisesRegex(RuntimeError, "LINE通知に失敗"):
+                daily_health_report.send_line("health check")
+
+        self.assertEqual(3, post.call_count)
 
 
 if __name__ == "__main__":
